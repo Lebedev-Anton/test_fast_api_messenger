@@ -1,7 +1,8 @@
 from typing import List
-from core.models import User, Message, Group, GroupUsers, Event, EventSubscriber
+from core.models import User, message, group, GroupUsers, Event, EventSubscriber
 from core.models import db_session
 from datetime import datetime
+from core.models import database
 
 
 def get_user_by_email(email: str) -> User:
@@ -14,11 +15,13 @@ def get_user_by_id(user_id: int) -> User:
     return user
 
 
-def get_sender_to_recipient_messages(recipient_id: int, sender_id: int):
-    messages = Message.query.filter_by(sender=sender_id,
-                                       recipient=recipient_id,
-                                       is_group=False).all()
-    return messages
+async def get_sender_to_recipient_messages(recipient_id: int,
+                                           sender_id: int) -> message:
+    query = message.select().where(sender_id == message.c.sender,
+                                   recipient_id == message.c.recipient,
+                                   False == message.c.is_group,
+                                   )
+    return await database.fetch_all(query=query)
 
 
 def set_new_user(email: str) -> User:
@@ -28,18 +31,19 @@ def set_new_user(email: str) -> User:
     return new_user
 
 
-def set_user_message(message: str,
-                     recipient_id: int,
-                     sender_id: int) -> Message:
-    message = Message(message=message, sender=sender_id,
-                      recipient=recipient_id, is_group=False)
-    db_session.add(message)
-    db_session.commit()
-    return message
+async def set_user_message(message_user: str,
+                           recipient_id: int,
+                           sender_id: int) -> message:
+    query = message.insert().values(message=message_user,
+                                    sender=sender_id,
+                                    recipient=recipient_id,
+                                    is_group=False,
+                                    )
+    return await database.execute(query=query)
 
 
 def set_new_group(owner_id: int, name: str, users_id: List[int]):
-    new_group = Group(owner=owner_id, name=name)
+    new_group = group(owner=owner_id, name=name)
     db_session.add(new_group)
     db_session.commit()
 
@@ -49,18 +53,18 @@ def set_new_group(owner_id: int, name: str, users_id: List[int]):
     db_session.commit()
 
 
-def get_group_by_name_and_owner(name: str, owner_id: int):
-    group = Group.query.filter_by(name=name, owner=owner_id).first()
-    return group
+async def get_group_by_name_and_owner(name: str, owner_id: int):
+    query = group.select().where(name == group.c.name, owner_id == group.c.owner)
+    return await database.fetch_all(query=query)
 
 
 def get_group_messages(group_id: int):
-    messages = Message.query.filter_by(group=group_id).all()
+    messages = message.query.filter_by(group=group_id).all()
     return messages
 
 
 def set_group_message(message: str, group_id: int, user_id: int):
-    message = Message(message=message, sender=user_id,
+    message = message(message=message, sender=user_id,
                       is_group=True, group=group_id)
     db_session.add(message)
     db_session.commit()
@@ -71,7 +75,7 @@ def get_user_groups(user_id: int):
     groups_id = GroupUsers.query.filter_by(id_user=user_id).all()
     groups = []
     for group_id in groups_id:
-        group = Group.query.filter_by(id=group_id.id_group).first()
+        group = group.query.filter_by(id=group_id.id_group).first()
         groups.append(group.name)
     return {'groups': groups}
 
@@ -95,8 +99,8 @@ def get_group_by_group_id(group_id: int):
     return groups
 
 
-def get_event_user_by_time(time: datetime):
-    events = Event.query.filter(Event.date > time).order_by(
+async def get_event_user_by_time(time: datetime):
+    events = await Event.query.filter(Event.date > time).order_by(
         Event.date.desc()
     ).all()
     return events

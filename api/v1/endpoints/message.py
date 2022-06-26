@@ -4,22 +4,22 @@ from api.v1.servises.messenger import (get_user_email,
                                        get_messages_story,
                                        send_user_message)
 from api.v1.servises.authorization import get_current_user
-from core.schemas.schemas import UserSchema, MessageSchema
+from core.schemas.schemas import UserSchema, UserMessage, UserMessages
 
 router = APIRouter()
 
 
-@router.get("/user/{email}")
+@router.get("/user/{email}", response_model=UserMessages)
 async def show_user_message(recipient: UserSchema = Depends(get_user_email),
-                     current_user: UserSchema = Depends(get_current_user)):
-    messages = get_messages_story(recipient, current_user)
-    return {"messages": messages}
+                            current_user: UserSchema = Depends(get_current_user)):
+    messages = await get_messages_story(recipient, current_user)
+    return messages
 
 
-@router.post("/user/{email}", response_model=MessageSchema, status_code=201)
+@router.post("/user/{email}", response_model=UserMessage, status_code=201)
 async def post_user_message(
-        message: MessageSchema,
+        message: UserMessage,
         recipient: UserSchema = Depends(get_user_email),
         current_user: UserSchema = Depends(get_current_user),):
-    new_message = send_user_message(message, recipient, current_user)
+    new_message = await send_user_message(message, recipient, current_user)
     return new_message

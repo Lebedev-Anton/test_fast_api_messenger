@@ -1,5 +1,5 @@
 from fastapi import Depends, HTTPException, status
-from core.schemas.schemas import RegistrationSchema, UserSchema, GroupSchema, MessageGroupSchema
+from core.schemas.schemas import RegistrationSchema, UserSchema, GroupSchema, MessageGroupSchema, MessageSchema, Messages
 from api.v1.servises.crud.crud import get_user_by_id, set_new_group, get_group_by_name_and_owner, get_group_messages, set_group_message, get_user_groups, \
     get_group_by_group_id
 
@@ -23,8 +23,9 @@ def get_group_info(group_info: GroupSchema):
     return group_info
 
 
-def get_group_story(group_name: str, owner: UserSchema):
-    group = get_group_by_name_and_owner(group_name, owner.id)
+async def get_group_story(group_name: str, owner: UserSchema) -> Messages:
+    group = await get_group_by_name_and_owner(group_name, owner.id)
+    print(group)
     if group is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -32,7 +33,19 @@ def get_group_story(group_name: str, owner: UserSchema):
         )
     register_user_event(owner, 'message_story', [])
     messages = get_group_messages(group.id)
-    return messages
+    print(messages)
+    messages_schema = []
+    for message in messages:
+        message_schema = MessageSchema(id=message.id,
+                                       sender=message.sender,
+                                       message=message.message,
+                                       recipient=message.recipient,
+                                       date=message.date,
+                                       is_group=message.is_group,
+                                       group=message.group,)
+        messages_schema.append(message_schema)
+
+    return Messages(messages=messages_schema)
 
 
 def send_group_message(message: MessageGroupSchema,

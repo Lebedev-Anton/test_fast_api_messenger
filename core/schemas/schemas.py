@@ -1,5 +1,6 @@
 from typing import List
 from pydantic import BaseModel
+from datetime import datetime
 
 
 class RegistrationSchema(BaseModel):
@@ -12,7 +13,25 @@ class UserSchema(BaseModel):
 
 
 class MessageSchema(BaseModel):
-    text: str
+    id: int
+    sender: int
+    message: str
+    recipient: int
+    date: datetime
+    is_group: bool
+    group: int
+
+
+class UserMessage(BaseModel):
+    message: str
+
+
+class UserMessages(BaseModel):
+    messages: List[UserMessage]
+
+
+class Messages(BaseModel):
+    messages: List[MessageSchema]
 
 
 class MessageGroupSchema(MessageSchema):
@@ -20,9 +39,10 @@ class MessageGroupSchema(MessageSchema):
 
 
 class GroupSchema(BaseModel):
+    id: int
     owner: int
     name: str
-    users: List[int]
+    # users: List[int]
 
 
 class EventSchema(BaseModel):

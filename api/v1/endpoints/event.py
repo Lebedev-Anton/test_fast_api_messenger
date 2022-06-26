@@ -9,7 +9,7 @@ router = APIRouter()
 
 @router.get("/online/")
 async def online_user(current_user: UserSchema = Depends(get_current_user)):
-    users = get_online_user()
+    users = await get_online_user()
     return {"online user": users}
 
 

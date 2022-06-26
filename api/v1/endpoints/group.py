@@ -11,7 +11,7 @@ router = APIRouter()
 async def show_group_message(
         group: str,
         current_user: UserSchema = Depends(get_current_user)):
-    messages = get_group_story(group, current_user)
+    messages = await get_group_story(group, current_user)
     return {"group_messages": messages}
 
 

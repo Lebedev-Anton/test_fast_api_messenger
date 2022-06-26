@@ -12,10 +12,10 @@ def register_user_event(owner: UserSchema, event: str, subscribers: List[int]):
         set_event_subscriber(event.id, subscriber)
 
 
-def get_online_user():
+async def get_online_user():
     date = datetime.utcnow()
     d = date - timedelta(minutes=15)
-    events = get_event_user_by_time(d)
+    events = await get_event_user_by_time(d)
     users = []
     for event in events:
         user = get_user_by_id(event.owner)
