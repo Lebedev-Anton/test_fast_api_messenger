@@ -1,0 +1,16 @@
+version: '2.0'
+
+services:
+  db:
+    image: postgres:12.1-alpine
+    volumes:
+      - simple_chat:/var/lib/postgresql/data/
+    ports:
+      - 7000:5432
+    environment:
+      - POSTGRES_USER=hello_fastapi
+      - POSTGRES_PASSWORD=hello_fastapi
+      - POSTGRES_DB=hello_fastapi_dev
+
+volumes:
+  simple_chat:
