@@ -12,6 +12,10 @@ class UserSchema(BaseModel):
     email: str
 
 
+class UserEvenSchema(UserSchema):
+    last_event_date: datetime
+
+
 class MessageSchema(BaseModel):
     text: str
 
@@ -50,7 +54,15 @@ class GroupUser(BaseModel):
     id_user: int
 
 
-
 class EventSchema(BaseModel):
     id: int
     type: str
+
+
+class UserEvent(EventSchema):
+    owner: int
+
+
+class DateEvent(UserEvent):
+    date: datetime
+

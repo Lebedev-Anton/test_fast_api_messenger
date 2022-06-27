@@ -15,7 +15,7 @@ async def online_user(current_user: UserSchema = Depends(get_current_user)):
 
 @router.get("/polling/")
 async def long_polling(current_user: UserSchema = Depends(get_current_user)):
-    events = get_long_polling_event(current_user)
+    events = await get_long_polling_event(current_user)
     return {"events": events}
 
 

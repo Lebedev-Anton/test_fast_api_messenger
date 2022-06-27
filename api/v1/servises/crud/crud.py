@@ -85,11 +85,9 @@ async def set_event(owner_id: int, event_type: str):
     return await database.execute(query=query)
 
 
-def set_event_subscriber(event_id: int, subscriber_id: int):
-    event_subscriber = event_subscriber(id_event=event_id, id_user=subscriber_id)
-    db_session.add(event_subscriber)
-    db_session.commit()
-    return event_subscriber
+async def set_event_subscriber(event_id: int, subscriber_id: int):
+    query = event_subscriber.insert().values(id_event=event_id, id_user=subscriber_id)
+    await database.execute(query=query)
 
 
 async def get_group_by_group_id(group_id: int):
@@ -98,28 +96,24 @@ async def get_group_by_group_id(group_id: int):
 
 
 async def get_event_user_by_time(time: datetime):
-    events = await event.query.filter(event.date > time).order_by(
-        event.date.desc()
-    ).all()
-    return events
+    query = event.select().where(time < event.c.date).order_by(event.c.date)
+    return await database.fetch_all(query=query)
 
 
-def set_user_last_event(user_id, last_event_date):
-    user = user.query.filter_by(id=user_id).first()
-    user.last_event_date = last_event_date
-    db_session.commit()
-    return user
+async def set_user_last_event(user_id, last_event_date):
+    query = user.update().where(
+        user_id == user.c.id).values(last_event_date=last_event_date)
+    await database.execute(query=query)
 
 
-def get_subscribe_event_user_by_time(user_id: int, time: datetime):
-    events = event_subscriber.query.filter(
-        event_subscriber.id_user == user_id
-    ).order_by(
-        event_subscriber.date.desc()
-    ).all()
+async def get_subscribe_event_user_by_time(user_id: int, time: datetime):
+    query = event_subscriber.select().where(
+        event_subscriber.c.id_user == user_id).order_by(event_subscriber.c.date)
+    events = await database.fetch_all(query=query)
     user_events = []
-    for event in events:
-        user_event = event.query.filter_by(id=event.id_event).first()
+    for e in events:
+        query = event.select().where(e.id_event == event.c.id)
+        user_event = await database.fetch_one(query=query)
         if user_event.date > time:
             user_events.append(user_event)
     return user_events
