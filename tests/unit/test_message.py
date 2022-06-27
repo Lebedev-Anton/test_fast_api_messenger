@@ -6,16 +6,16 @@ from core.schemas.schemas import UserMessage, UserSchema
 
 
 def test_show_user_message(test_app, monkeypatch):
-    test_response = {
+    test_request = {
         'messages': [{'message': 'сообщение_1'}, {'message': 'сообщение_2'}]}
 
     async def mock_get_sender_to_recipient_messages(recipient_id: int,
-                                              sender_id: int):
+                                                    sender_id: int):
         message_1 = UserMessage(message='сообщение_1')
         message_2 = UserMessage(message='сообщение_2')
         return [message_1, message_2]
 
-    def mock_get_user_by_email(email: str):
+    async def mock_get_user_by_email(email: str):
         return UserSchema(id=1, email='email@email.ru')
 
     monkeypatch.setattr(messenger,
@@ -30,18 +30,18 @@ def test_show_user_message(test_app, monkeypatch):
                             headers={"Authorization": "Bearer email@email.ru"})
 
     assert response.status_code == 200
-    assert response.json() == test_response
+    assert response.json() == test_request
 
 
 def test_post_user_message(test_app, monkeypatch):
-    test_response = {"message": "Тестовое сообщение"}
+    test_request = {"message": "Тестовое сообщение"}
 
     async def mock_set_user_message(message_user: str,
                                     recipient_id: int,
                                     sender_id: int):
         return UserMessage(message='Тестовое сообщение')
 
-    def mock_get_user_by_email(email: str):
+    async def mock_get_user_by_email(email: str):
         return UserSchema(id=1, email='email@email.ru')
 
     monkeypatch.setattr(messenger,
@@ -54,7 +54,7 @@ def test_post_user_message(test_app, monkeypatch):
 
     response = test_app.post("/message/user/email3@mail.ru",
                              headers={"Authorization": "Bearer email@email.ru"},
-                             data=json.dumps(test_response),)
+                             data=json.dumps(test_request),)
 
     assert response.status_code == 201
-    assert response.json() == test_response
+    assert response.json() == test_request

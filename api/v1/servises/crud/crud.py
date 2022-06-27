@@ -1,18 +1,18 @@
 from typing import List
-from core.models import User, message, group, GroupUsers, Event, EventSubscriber
+from core.models import user, message, group, group_users, event, event_subscriber
 from core.models import db_session
 from datetime import datetime
 from core.models import database
 
 
-def get_user_by_email(email: str) -> User:
-    user = User.query.filter_by(email=email).first()
-    return user
+async def get_user_by_email(email: str) -> user:
+    query = user.select().where(email == user.c.email)
+    return await database.fetch_one(query=query)
 
 
-def get_user_by_id(user_id: int) -> User:
-    user = User.query.filter_by(id=user_id).first()
-    return user
+async def get_user_by_id(user_id: int) -> user:
+    query = user.select().where(user_id == user.c.id)
+    return await database.fetch_one(query=query)
 
 
 async def get_sender_to_recipient_messages(recipient_id: int,
@@ -24,11 +24,9 @@ async def get_sender_to_recipient_messages(recipient_id: int,
     return await database.fetch_all(query=query)
 
 
-def set_new_user(email: str) -> User:
-    new_user = User(email=email)
-    db_session.add(new_user)
-    db_session.commit()
-    return new_user
+async def set_new_user(email: str) -> user:
+    query = user.insert().values(email=email)
+    return await database.execute(query=query)
 
 
 async def set_user_message(message_user: str,
@@ -42,15 +40,13 @@ async def set_user_message(message_user: str,
     return await database.execute(query=query)
 
 
-def set_new_group(owner_id: int, name: str, users_id: List[int]):
-    new_group = group(owner=owner_id, name=name)
-    db_session.add(new_group)
-    db_session.commit()
+async def set_new_group(owner_id: int, name: str, users_id: List[int]):
+    query = group.insert().values(owner=owner_id, name=name)
+    new_group = await database.execute(query=query)
 
     for user_id in users_id:
-        group_user = GroupUsers(id_group=new_group.id, id_user=user_id)
-        db_session.add(group_user)
-    db_session.commit()
+        query = group_users.insert().values(id_group=new_group, id_user=user_id)
+        await database.execute(query=query)
 
 
 async def get_group_by_name_and_owner(name: str, owner_id: int):
@@ -63,16 +59,17 @@ def get_group_messages(group_id: int):
     return messages
 
 
-def set_group_message(message: str, group_id: int, user_id: int):
-    message = message(message=message, sender=user_id,
-                      is_group=True, group=group_id)
-    db_session.add(message)
-    db_session.commit()
-    return message
+async def set_group_message(user_message: str, group_id: int, user_id: int):
+    query = message.insert().values(message=user_message,
+                                    sender=user_id,
+                                    is_group=True,
+                                    group=group_id,
+                                    )
+    return await database.execute(query=query)
 
 
 def get_user_groups(user_id: int):
-    groups_id = GroupUsers.query.filter_by(id_user=user_id).all()
+    groups_id = group_users.query.filter_by(id_user=user_id).all()
     groups = []
     for group_id in groups_id:
         group = group.query.filter_by(id=group_id.id_group).first()
@@ -80,48 +77,47 @@ def get_user_groups(user_id: int):
     return {'groups': groups}
 
 
-def set_event(owner_id: int, event_type: str):
-    event = Event(owner=owner_id, type=event_type)
-    db_session.add(event)
-    db_session.commit()
-    return event
+async def set_event(owner_id: int, event_type: str):
+    query = event.insert().values(owner=owner_id,
+                                  type=event_type)
+    return await database.execute(query=query)
 
 
 def set_event_subscriber(event_id: int, subscriber_id: int):
-    event_subscriber = EventSubscriber(id_event=event_id, id_user=subscriber_id)
+    event_subscriber = event_subscriber(id_event=event_id, id_user=subscriber_id)
     db_session.add(event_subscriber)
     db_session.commit()
     return event_subscriber
 
 
 def get_group_by_group_id(group_id: int):
-    groups = GroupUsers.query.filter_by(id_group=group_id).all()
+    groups = group_users.query.filter_by(id_group=group_id).all()
     return groups
 
 
 async def get_event_user_by_time(time: datetime):
-    events = await Event.query.filter(Event.date > time).order_by(
-        Event.date.desc()
+    events = await event.query.filter(event.date > time).order_by(
+        event.date.desc()
     ).all()
     return events
 
 
 def set_user_last_event(user_id, last_event_date):
-    user = User.query.filter_by(id=user_id).first()
+    user = user.query.filter_by(id=user_id).first()
     user.last_event_date = last_event_date
     db_session.commit()
     return user
 
 
 def get_subscribe_event_user_by_time(user_id: int, time: datetime):
-    events = EventSubscriber.query.filter(
-        EventSubscriber.id_user == user_id
+    events = event_subscriber.query.filter(
+        event_subscriber.id_user == user_id
     ).order_by(
-        EventSubscriber.date.desc()
+        event_subscriber.date.desc()
     ).all()
     user_events = []
     for event in events:
-        user_event = Event.query.filter_by(id=event.id_event).first()
+        user_event = event.query.filter_by(id=event.id_event).first()
         if user_event.date > time:
             user_events.append(user_event)
     return user_events

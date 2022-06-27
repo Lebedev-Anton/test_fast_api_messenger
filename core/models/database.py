@@ -1,69 +1,66 @@
 from sqlalchemy import (Column, DateTime, Integer, String, ForeignKey, Boolean, Table)
 from sqlalchemy.sql import func
 
-from core.models import Base, metadata
+from core.models import metadata
 
-
-class User(Base):
-    __tablename__ = 'user'
-    id = Column(Integer, primary_key=True)
-    email = Column(String)
-    date = Column(DateTime, default=func.now(), nullable=False)
-    last_event_date = Column(DateTime)
+user = Table(
+    "user",
+    metadata,
+    Column("id", Integer, primary_key=True),
+    Column("email", String),
+    Column("date", DateTime, default=func.now(), nullable=False),
+    Column("last_event_date", DateTime, ),
+)
 
 
 group = Table(
     "group",
     metadata,
     Column("id", Integer, primary_key=True),
-    Column("owner", Integer, ForeignKey(User.id)),
+    Column("owner", Integer, ForeignKey('user.id')),
     Column("name", String),
     Column("date", DateTime, default=func.now(), nullable=False),
 )
 
 
-class GroupUsers(Base):
-    __tablename__ = 'group_users'
-    id = Column(Integer, primary_key=True)
-    id_group = Column(Integer, ForeignKey('Group.id'))
-    id_user = Column(Integer, ForeignKey(User.id))
+group_users = Table(
+    "group_users",
+    metadata,
+    Column("id", Integer, primary_key=True),
+    Column("id_group", Integer, ForeignKey('group.id')),
+    Column("id_user", Integer, ForeignKey('user.id')),
 
-
-# class Message(Base):
-#     __tablename__ = 'message'
-#     id = Column(Integer, primary_key=True)
-#     sender = Column(Integer, ForeignKey(User.id))
-#     message = Column(String)
-#     recipient = Column(Integer, ForeignKey(User.id))
-#     date = Column(DateTime, default=func.now(), nullable=False)
-#     is_group = Column(Boolean, default=False)
-#     group = Column(Integer, ForeignKey('Group.id'))
+)
 
 
 message = Table(
     "message",
     metadata,
     Column("id", Integer, primary_key=True),
-    Column("sender", Integer, ForeignKey(User.id)),
+    Column("sender", Integer, ForeignKey('user.id')),
     Column("message", String),
-    Column("recipient", Integer, ForeignKey(User.id)),
+    Column("recipient", Integer, ForeignKey('user.id')),
     Column("date", DateTime, default=func.now(), nullable=False),
     Column("is_group", Boolean, default=False),
     Column("group", Integer, ForeignKey('group.id')),
 )
 
 
-class Event(Base):
-    __tablename__ = 'event'
-    id = Column(Integer, primary_key=True)
-    type = Column(String)
-    owner = Column(Integer, ForeignKey(User.id))
-    date = Column(DateTime, default=func.now(), nullable=False)
+event = Table(
+    "event",
+    metadata,
+    Column("id", Integer, primary_key=True),
+    Column("type", String),
+    Column("owner", Integer, ForeignKey('user.id')),
+    Column("date", DateTime, default=func.now(), nullable=False),
+)
 
+event_subscriber = Table(
+    "event_subscriber",
+    metadata,
+    Column("id", Integer, primary_key=True),
+    Column("id_event", Integer, ForeignKey('event.id')),
+    Column("id_user", Integer, ForeignKey('user.id')),
+    Column("date", DateTime, default=func.now(), nullable=False),
+)
 
-class EventSubscriber(Base):
-    __tablename__ = 'event_subscriber'
-    id = Column(Integer, primary_key=True)
-    id_event = Column(Integer, ForeignKey(Event.id))
-    id_user = Column(Integer, ForeignKey(User.id))
-    date = Column(DateTime, default=func.now(), nullable=False)

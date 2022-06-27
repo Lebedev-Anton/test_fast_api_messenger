@@ -6,8 +6,8 @@ import time
 from datetime import datetime, timedelta
 
 
-def register_user_event(owner: UserSchema, event: str, subscribers: List[int]):
-    event = set_event(owner.id, event)
+async def register_user_event(owner: UserSchema, event: str, subscribers: List[int]):
+    event = await set_event(owner.id, event)
     for subscriber in subscribers:
         set_event_subscriber(event.id, subscriber)
 

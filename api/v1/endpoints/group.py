@@ -18,8 +18,8 @@ async def show_group_message(
 @router.post("/{group}/", response_model=MessageGroupSchema, status_code=201)
 async def post_group_message(
         message: MessageGroupSchema,
-        current_user: UserSchema = Depends(get_current_user),):
-    new_message = send_group_message(message, current_user)
+        current_user: UserSchema = Depends(get_current_user)):
+    new_message = await send_group_message(message, current_user)
     return new_message
 
 

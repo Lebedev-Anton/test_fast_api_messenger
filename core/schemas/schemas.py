@@ -13,13 +13,7 @@ class UserSchema(BaseModel):
 
 
 class MessageSchema(BaseModel):
-    id: int
-    sender: int
-    message: str
-    recipient: int
-    date: datetime
-    is_group: bool
-    group: int
+    text: str
 
 
 class UserMessage(BaseModel):
@@ -39,10 +33,9 @@ class MessageGroupSchema(MessageSchema):
 
 
 class GroupSchema(BaseModel):
-    id: int
     owner: int
     name: str
-    # users: List[int]
+    users: List[int]
 
 
 class EventSchema(BaseModel):
