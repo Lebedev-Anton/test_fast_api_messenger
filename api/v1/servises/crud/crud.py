@@ -51,12 +51,12 @@ async def set_new_group(owner_id: int, name: str, users_id: List[int]):
 
 async def get_group_by_name_and_owner(name: str, owner_id: int):
     query = group.select().where(name == group.c.name, owner_id == group.c.owner)
+    return await database.fetch_one(query=query)
+
+
+async def get_group_messages(group_id: int):
+    query = message.select().where(group_id == message.c.group)
     return await database.fetch_all(query=query)
-
-
-def get_group_messages(group_id: int):
-    messages = message.query.filter_by(group=group_id).all()
-    return messages
 
 
 async def set_group_message(user_message: str, group_id: int, user_id: int):
@@ -68,13 +68,15 @@ async def set_group_message(user_message: str, group_id: int, user_id: int):
     return await database.execute(query=query)
 
 
-def get_user_groups(user_id: int):
-    groups_id = group_users.query.filter_by(id_user=user_id).all()
+async def get_user_groups(user_id: int):
+    query = group_users.select().where(user_id == group_users.c.id_user)
+    groups_id = await database.fetch_all(query=query)
     groups = []
     for group_id in groups_id:
-        group = group.query.filter_by(id=group_id.id_group).first()
-        groups.append(group.name)
-    return {'groups': groups}
+        query = group.select().where(group_id.id_group == group.c.id)
+        user_group = await database.fetch_one(query=query)
+        groups.append(user_group)
+    return groups
 
 
 async def set_event(owner_id: int, event_type: str):
@@ -90,9 +92,9 @@ def set_event_subscriber(event_id: int, subscriber_id: int):
     return event_subscriber
 
 
-def get_group_by_group_id(group_id: int):
-    groups = group_users.query.filter_by(id_group=group_id).all()
-    return groups
+async def get_group_by_group_id(group_id: int):
+    query = group_users.select().where(group_id == group_users.c.id_group)
+    return await database.fetch_all(query=query)
 
 
 async def get_event_user_by_time(time: datetime):

@@ -38,6 +38,19 @@ class GroupSchema(BaseModel):
     users: List[int]
 
 
+class Group(BaseModel):
+    id: int
+    owner: int
+    name: str
+
+
+class GroupUser(BaseModel):
+    id: int
+    id_group: int
+    id_user: int
+
+
+
 class EventSchema(BaseModel):
     id: int
     type: str
