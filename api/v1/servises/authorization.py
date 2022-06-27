@@ -8,6 +8,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 
 async def get_current_user(email: str = Depends(oauth2_scheme)) -> UserSchema:
+    """Запрос пользователя по email."""
     user = await get_user_by_email(email)
     if user is None:
         raise HTTPException(
@@ -18,7 +19,9 @@ async def get_current_user(email: str = Depends(oauth2_scheme)) -> UserSchema:
     return UserSchema(id=user.id, email=email)
 
 
-async def register_new_user(registration_info: RegistrationSchema) -> UserSchema:
+async def register_new_user(
+        registration_info: RegistrationSchema) -> UserSchema:
+    """Регистрация пользрователя."""
     user = await get_user_by_email(registration_info.email)
     if user is None:
         new_user = await set_new_user(registration_info.email)

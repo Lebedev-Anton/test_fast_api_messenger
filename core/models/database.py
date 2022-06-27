@@ -1,4 +1,10 @@
-from sqlalchemy import (Column, DateTime, Integer, String, ForeignKey, Boolean, Table)
+from sqlalchemy import (Column,
+                        DateTime,
+                        Integer,
+                        String,
+                        ForeignKey,
+                        Boolean,
+                        Table)
 from sqlalchemy.sql import func
 
 from core.models import metadata
@@ -63,4 +69,3 @@ event_subscriber = Table(
     Column("id_user", Integer, ForeignKey('user.id')),
     Column("date", DateTime, default=func.now(), nullable=False),
 )
-

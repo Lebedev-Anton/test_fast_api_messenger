@@ -1,8 +1,9 @@
-import json
-
 from api.v1.servises import events
 from api.v1.servises import authorization
-from core.schemas.schemas import UserMessage, UserSchema, UserEvenSchema, UserEvent, DateEvent
+from core.schemas.schemas import (UserSchema,
+                                  UserEvenSchema,
+                                  UserEvent,
+                                  DateEvent)
 from datetime import datetime
 
 
@@ -50,13 +51,15 @@ def test_long_polling(test_app, monkeypatch):
     test_response = {'events': [{'id': 1, 'type': 'Тип 1'},
                                 {'id': 2, 'type': 'Тип 2'}]}
 
-    async def mock_get_subscribe_event_user_by_time(user_id: int, time: datetime):
+    async def mock_get_subscribe_event_user_by_time(user_id: int,
+                                                    time: datetime):
         event_1 = DateEvent(id=1, type='Тип 1', owner=1, date=test_time)
         event_2 = DateEvent(id=2, type='Тип 2', owner=2, date=test_time)
         return [event_1, event_2]
 
     async def mock_get_user_by_id(user_id: int):
-        return UserEvenSchema(id=2, email='email2@email.ru', last_event_date='2022-06-25 20:00:38.375')
+        return UserEvenSchema(id=2, email='email2@email.ru',
+                              last_event_date='2022-06-25 20:00:38.375')
 
     async def mock_get_user_by_email(email: str):
         return UserSchema(id=1, email='email@email.ru')

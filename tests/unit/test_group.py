@@ -1,9 +1,8 @@
 import json
 from typing import List
-import pytest
 from api.v1.servises import groups
 from api.v1.servises import authorization
-from core.schemas.schemas import UserSchema, GroupSchema, Messages, UserMessage, Group, GroupUser
+from core.schemas.schemas import UserSchema, UserMessage, Group, GroupUser
 
 
 def test_show_group_message(test_app, monkeypatch):

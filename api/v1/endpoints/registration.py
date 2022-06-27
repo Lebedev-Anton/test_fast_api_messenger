@@ -9,11 +9,13 @@ router = APIRouter()
 
 @router.post('/user/', response_model=UserSchema, status_code=201)
 async def register_user(registration_info: RegistrationSchema):
+    """Регистрация нового пользователя."""
     new_user = await register_new_user(registration_info)
     return new_user
 
 
 @router.post('/group/', response_model=GroupSchema, status_code=201)
 async def register_group(group_info: GroupSchema = Depends(get_group_info)):
+    """Регистрация новой группы."""
     new_group = await register_new_group(group_info)
     return new_group

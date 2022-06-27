@@ -65,4 +65,3 @@ class UserEvent(EventSchema):
 
 class DateEvent(UserEvent):
     date: datetime
-
